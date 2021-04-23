@@ -24,7 +24,8 @@ function habilitarDibujo(){
        // finalizarBorrado();
         comenzarDibujo();
         comenzarTrazo();
-        finalizarDibujo();
+        finalizarDibujo(); 
+
 }
 
 //evento que controla cuando hace click dentro de canvas.---
@@ -46,7 +47,6 @@ function comenzarTrazo(){
 
         if(dibujando) {
 
-
             let posActualX=e.clientX-rect.left;
             let posActualY=e.clientY-rect.top;    
             dibujar(x,y,posActualX,posActualY);
@@ -63,11 +63,7 @@ function finalizarDibujo(){
 
             //me quedo con las coordenadas donde dejo de hacer click y debo dibujar la ultima linea
 
-            if(dibujando){
-               // let posActualX=e.clientX-rect.left;
-               // let posActualY=e.clientY-rect.top;    
-              //  dibujar(x,y,posActualX,posActualY);
-                //ahora mi punto inicial vuelve a cero
+            if(dibujando){             
                 x=0;
                 y=0;
                 dibujando=false;
