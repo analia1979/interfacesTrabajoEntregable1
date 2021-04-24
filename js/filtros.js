@@ -19,13 +19,44 @@ imagen.addEventListener('change',function(e){
 
             canvas.width=myImage.width;
             canvas.hegth=myImage.height;
-            ctx.drawImage(myImage,0,0);
+            myDrawImage(myImage);
         }
     }
+     function myDrawImage(image){
+
+            drawImage(image,0,0);
+     }
+
     }
           
 
     })
+//Filtro Blanco y negro.  Para aplicar el filtro BYN r,g,b deben tener el mismo valor
+let btnBlancoYNegro=document.getElementById('btnBlancoYNegro');
+ 
+btnBlancoYNegro.addEventListener('click',filtroBlancoYNegro);
+
+function filtroBlancoYNegro(){
+
+    let imageData=myImage.getImageData();
+    for (let i = 0; i < myImage.width; i++) {
+
+        for (let j = 0; j < myImage.height; j++) {
+           
+             red=myImage.imageData[i];
+             green=myImage.imageData[i];
+             red=myImage.imageData[i];
+           
+            
+        }
+
+      
+        
+    }
+
+
+}
+
 
 
 
