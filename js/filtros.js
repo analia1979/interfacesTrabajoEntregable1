@@ -41,11 +41,11 @@ function myDrawImage(image){
  document.getElementById("btnRestaurar").addEventListener("click", e => {
    ctx.putImageData(imagenOriginal, 0, 0);
 });
- let btnGuardar = document.querySelector("#btnGuardar");
+/*  let btnGuardar = document.querySelector("#btnGuardar");
  btnGuardar.addEventListener("click", e => {
      let dir = canvas.toDataURL('images/jpg');
      btnGuardar.href = dir;
- });
+ }); */
 //------------------------FILTRO BLANCO Y NEGRO--------------------------------------------------------------
 //Filtro Blanco y negro.  Para aplicar el filtro BYN r,g,b deben tener el mismo valor
 let btnBlancoYNegro=document.getElementById('btnBlancoyNegro'); 
