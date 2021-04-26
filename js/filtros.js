@@ -154,18 +154,17 @@ function getPixelRGB(imageData, x, y){
 }
 
 /////////----------------------------------FILTRO BRILLO-----------------------------------------------------------------//////////////
-/////En cuanto al brillo, el mismo consiste en sumar una constante  que se encuentre en el rango 0-255; 
+/////En cuanto al brillo, el mismo consiste en sumar a cada pixel una constante  
 //
 let btnBrilloMas = document.getElementById('btnBrillo');
-btnBrilloMas.addEventListener('change', function() {
-    var brillo = parseInt(this.value);
+btnBrilloMas.addEventListener('click', function() {
+    let brillo = 50;
     filtroBrillo(brillo);
 });
     function filtroBrillo(valor){
-        //let factor;
-     // let intensidad = 255 * (valor * 0.1);
+        
      let intensidad=valor;
-      //let imageData=ctx.getImageData(0,0,myImage.width,myImage.height);
+   
       let imageData=ctx.getImageData(0,0,width,height);
         for (let x = 0; x < width; x++) {
             for (let y = 0; y < height; y++) {
@@ -196,7 +195,7 @@ btnBrilloMas.addEventListener('change', function() {
 //de reduccion de la informacion de una imagen digital a dos valores : 0 (negro) y 255(blanco).
 //Esta tecnica consiste en comparar cada pixel de la imagen con un determinado umbral 
 //(valor limite que determina si un pixel sera de color blanco o negro).
-// Los valores de la imagen que sean mayores que el umbral toman un valor 255 (blanco), 
+// Los valores de la imagen que sean mayores de 127 toman un valor 255 (blanco), 
 //el resto de pixeles toman valor 0(negro).
 let btnBinarizacion=document.getElementById('btnBinarizacion');
 btnBinarizacion.addEventListener('click',filtroBinarizacion)
@@ -208,7 +207,7 @@ function filtroBinarizacion() {
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
             let pixel = getPixelRGB(imageData, x, y);
-            let promedioPixel = rangoColor(Math.floor((pixel[0] + pixel[1] + pixel[2]) / 3));
+            let promedioPixel = rangoColor(Math.floor((pixel[0] + pixel[1] + pixel[2]) / 3));            
             let pixelBlancoNegro = comprobarBlancoNegro(promedioPixel);          
             
             setPixel(imageData, x, y, pixelBlancoNegro, pixelBlancoNegro, pixelBlancoNegro, 255);
@@ -218,7 +217,7 @@ function filtroBinarizacion() {
     
 }
 
-function comprobarBlancoNegro(pixel) {
+function comprobarBlancoNegro(pixel) {  // si el pixel esta entre 127 y 255 entonces es totalmente blanco caso contrario totalmente negro
     if ((pixel > 127) && (pixel <= 255)) {
         return 255;
     } else if ((pixel >= 0) && (pixel <= 127)) {
@@ -228,18 +227,18 @@ function comprobarBlancoNegro(pixel) {
 
 //---------------------------------------SATURACION-----------------------------------------
 
+// debo pasar a hsv y luego a rgb
 
-
-let rangoSaturacion = document.getElementById('rangoSaturacion');
-rangoSaturacion.addEventListener('change', function() {
-    var saturacion = parseInt(this.value);
+let btnSaturacion = document.getElementById('btnSaturacion');
+btnSaturacion.addEventListener('click', function() {
+    let saturacion = 0.5;
     filtroSaturacion(saturacion);
 });
 
 
 
 function filtroSaturacion(saturacion) {
-   // let imageData = ctx.getImageData(0, 0, myImage.width, myImage.height); 
+
    let imageData=ctx.getImageData(0,0,width,height);
     for (let x = 0; x < width; x++) {
         for (let y = 0; y <  height; y++) {
@@ -337,6 +336,64 @@ function HSVtoRGB(h, s, v) {
         Math.round(b * 255)
     ];
 }
+
+//-------------------------------------------- FILTRO BLUR----------------------------------------------------------------------------
+
+let btnBlur=document.getElementById('btnBlur');
+btnBlur.addEventListener('click',filtroBlur);
+
+function filtroBlur(){
+
+    let imagenOriginal = ctx.getImageData(0, 0, width, height); 
+    let imageDataEditada = aplicarBlur(imagenOriginal);
+    ctx.putImageData(imageDataEditada, 0, 0);
+}
+
+function aplicarBlur(imagen){
+
+    let matrizFiltro = [
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1]
+    ];
+     let n=9;
+
+    for (let x = (0 + 1); x < (width - 1); x++) {
+        for (let y = (0 + 1); y < (height - 1); y++) {
+            let pixel_1_SupIzq = getPixelRGB(imagen, x - 1, y - 1); //superior izquirda 1
+            let pixel_2_Arriba = getPixelRGB(imagen, x - 1, y); //arriba 2
+            let pixel_3_SupDer = getPixelRGB(imagen, x - 1, y + 1); //superior derecha 3
+            let pixel_4_Izq = getPixelRGB(imagen, x, y - 1); //izquierda 4
+            let pixel_5_Centro = getPixelRGB(imagen, x, y); // pixel a cambiar del medio 5
+            let pixel_6_Der = getPixelRGB(imagen, x, y + 1); // derecha 6
+            let pixel_7_InfIzq = getPixelRGB(imagen, x + 1, y - 1); // inferior izquierda 7
+            let pixel_8_Abajo = getPixelRGB(imagen, x + 1, y); // abajo 8
+            let pixel_9_InfDer = getPixelRGB(imagen, x + 1, y + 1); // inferior derecha 9
+            // saco el promedio
+            let r = Math.floor((
+                (pixel_1_SupIzq[0] * matrizFiltro[0][0]) + (pixel_2_Arriba[0] * matrizFiltro[0][1]) + (pixel_3_SupDer[0] * matrizFiltro[0][2]) +
+                (pixel_4_Izq[0] * matrizFiltro[1][0]) + (pixel_5_Centro[0] * matrizFiltro[1][1]) + (pixel_6_Der[0] * matrizFiltro[1][2]) +
+                (pixel_7_InfIzq[0] * matrizFiltro[2][0]) + (pixel_8_Abajo[0] * matrizFiltro[2][1]) + (pixel_9_InfDer[0] * matrizFiltro[2][2])
+            ) / n);
+            let g = Math.floor((
+                (pixel_1_SupIzq[1] * matrizFiltro[0][0]) + (pixel_2_Arriba[1] * matrizFiltro[0][1]) + (pixel_3_SupDer[1] * matrizFiltro[0][2]) +
+                (pixel_4_Izq[1] * matrizFiltro[1][0]) + (pixel_5_Centro[1] * matrizFiltro[1][1]) + (pixel_6_Der[1] * matrizFiltro[1][2]) +
+                (pixel_7_InfIzq[1] * matrizFiltro[2][0]) + (pixel_8_Abajo[1] * matrizFiltro[2][1]) + (pixel_9_InfDer[1] * matrizFiltro[2][2])
+            ) / n);
+            let b = Math.floor((
+                (pixel_1_SupIzq[2] * matrizFiltro[0][0]) + (pixel_2_Arriba[2] * matrizFiltro[0][1]) + (pixel_3_SupDer[2] * matrizFiltro[0][2]) +
+                (pixel_4_Izq[2] * matrizFiltro[1][0]) + (pixel_5_Centro[2] * matrizFiltro[1][1]) + (pixel_6_Der[2] * matrizFiltro[1][2]) +
+                (pixel_7_InfIzq[2] * matrizFiltro[2][0]) + (pixel_8_Abajo[2] * matrizFiltro[2][1]) + (pixel_9_InfDer[2] * matrizFiltro[2][2])
+            ) / n);
+
+            setPixel(imagen, x, y, r, g, b, 255);
+        }
+    }
+ 
+    return imagen;
+}
+
+
 
 
 })
