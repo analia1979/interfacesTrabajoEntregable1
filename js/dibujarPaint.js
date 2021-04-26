@@ -2,6 +2,8 @@
 document.addEventListener('DOMContentLoaded' , () => {
         let canvas=document.getElementById('myCanvas');
         let contexto=canvas.getContext('2d');
+        let width=canvas.width;
+        let height=canvas.height
         let rect=canvas.getBoundingClientRect();
         let x=0;
         let y=0;
@@ -10,6 +12,13 @@ document.addEventListener('DOMContentLoaded' , () => {
         let goma = document.getElementById("btnGoma");
         let dibujando = false;
         let borrando = false;
+
+        let btnLimpiar = document.getElementById('btnLimpiar');
+        
+        btnLimpiar.addEventListener('click', function(){
+            contexto.clearRect(0, 0, width, height);
+        });
+
 
         lapiz.addEventListener("click", e => {
             dibujando = true;
