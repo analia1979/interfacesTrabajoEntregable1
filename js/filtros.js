@@ -41,11 +41,7 @@ function myDrawImage(image){
  document.getElementById("btnRestaurar").addEventListener("click", e => {
    ctx.putImageData(imagenOriginal, 0, 0);
 });
-/*  let btnGuardar = document.querySelector("#btnGuardar");
- btnGuardar.addEventListener("click", e => {
-     let dir = canvas.toDataURL('images/jpg');
-     btnGuardar.href = dir;
- }); */
+
 //------------------------FILTRO BLANCO Y NEGRO--------------------------------------------------------------
 //Filtro Blanco y negro.  Para aplicar el filtro BYN r,g,b deben tener el mismo valor
 let btnBlancoYNegro=document.getElementById('btnBlancoyNegro'); 
@@ -357,9 +353,9 @@ function aplicarBlur(imagen){
         [1, 1, 1]
     ];
      let n=9;
-
-    for (let x = (0 + 1); x < (width - 1); x++) {
-        for (let y = (0 + 1); y < (height - 1); y++) {
+    
+    for (let x =1; x < (width - 1); x++) {
+        for (let y = 1; y < (height - 1); y++) {
             let pixel_1_SupIzq = getPixelRGB(imagen, x - 1, y - 1); //superior izquirda 1
             let pixel_2_Arriba = getPixelRGB(imagen, x - 1, y); //arriba 2
             let pixel_3_SupDer = getPixelRGB(imagen, x - 1, y + 1); //superior derecha 3
@@ -385,13 +381,47 @@ function aplicarBlur(imagen){
                 (pixel_4_Izq[2] * matrizFiltro[1][0]) + (pixel_5_Centro[2] * matrizFiltro[1][1]) + (pixel_6_Der[2] * matrizFiltro[1][2]) +
                 (pixel_7_InfIzq[2] * matrizFiltro[2][0]) + (pixel_8_Abajo[2] * matrizFiltro[2][1]) + (pixel_9_InfDer[2] * matrizFiltro[2][2])
             ) / n);
-
+         
             setPixel(imagen, x, y, r, g, b, 255);
         }
     }
  
     return imagen;
 }
+
+let btnGuardar=document.getElementById('btnGuardar');
+btnGuardar.addEventListener('click',grabarImagen)
+
+function grabarImagen(){
+
+    grabar();
+    let imageData = ctx.createImageData(width,height);    
+    for (let x=0;x<width;x++){
+        for(let y=0;y<height;y++){
+            setPixel(imageData,x,y,255,255,255,255);
+        }
+    }
+    ctx.putImageData(imageData,0,0);
+
+};
+function grabar () {
+    var link = window.document.createElement( 'a' ),
+        url = canvas.toDataURL(),
+        filename = 'imagen.jpg';
+
+    link.setAttribute( 'href', url );
+    link.setAttribute( 'download', filename );
+    link.style.visibility = 'hidden';
+    window.document.body.appendChild( link );
+    link.click();
+    window.document.body.removeChild( link );
+    
+};
+
+
+
+
+
 
 
 
