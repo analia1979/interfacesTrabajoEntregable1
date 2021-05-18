@@ -1,19 +1,28 @@
 document.addEventListener('DOMContentLoaded' , () => {
 
 let canvas=document.getElementById('myCanvasImage');
+let canvasOriginal=document.getElementById('myCanvasOriginal');
+let contexto=canvasOriginal.getContext('2d');
 
 let ctx=canvas.getContext('2d');
-let imagenTamanoOriginal=new Image();
+
 let width=canvas.width;
 let height=canvas.height;
+let nuevoAlto=canvas.height;
+let nuevoAncho=canvas.width;
 let myImage = new Image();
 let imagen=document.getElementById('file');
 let imagenOriginal;
+let imagenOriginal2;
 
+imagen.addEventListener('click',function(e){
 
+    imagen.value='';
+})
 imagen.addEventListener('change',function(e){
 
     limpiarCanvas();
+    
     if(e.target.files){
 
     let reader=new FileReader(); // creamos un objeto para almacenar la imagen
@@ -22,27 +31,25 @@ imagen.addEventListener('change',function(e){
 
         myImage.src=e.target.result;
         myImage.onload=()=>{    
-            
-            //si aspect es mayor que 1, entonces la imagen está orientada horizontalmente, 
-            // si es menor que 1  la imagen está orientada verticalmente
-             // (y es cuadrada si aspect = 1)
-           
+
             let aspectRatio=myImage.width/myImage.height;
             if (aspectRatio<1){
-                let nuevoAncho=Math.floor(height*aspectRatio);          
+                nuevoAncho=Math.floor(height*aspectRatio);          
                  myDrawImage(myImage,nuevoAncho,height);
                
             }
             else{
                 if (aspectRatio>1){
 
-                        let nuevoAlto=Math.floor(width/aspectRatio);
+                        nuevoAlto=Math.floor(width/aspectRatio);
                         
                         myDrawImage(myImage,width,nuevoAlto);
             }else{
                 myDrawImage(myImage,width,height);
             }
-            }
+            } 
+          //  console.log(myImage.width,myImage.height);
+            //console.log(width,height);
             
         }
     }   
@@ -53,15 +60,21 @@ imagen.addEventListener('change',function(e){
 
 function myDrawImage(image,width,height){
 
-        ctx.drawImage(image,0,0,width,height);
-       
+        ctx.drawImage(image,0,0,width,height);   
+        canvasOriginal.width=image.width;
+        canvasOriginal.height=image.height;
+        contexto.drawImage(image,0,0,canvasOriginal.width,canvasOriginal.height);     
         imagenOriginal=ctx.getImageData(0,0,width,height);
+        imagenOriginal2=contexto.getImageData(0,0,canvasOriginal.width,canvasOriginal.height);
+        console.log(canvasOriginal.width,canvasOriginal.height,width,height);
+
 
 
  }
 //////////////////////////---------------------RESTAURAR------------------------////////////////////
  document.getElementById("btnRestaurar").addEventListener("click", e => {
    ctx.putImageData(imagenOriginal, 0, 0);
+   contexto.putImageData(imagenOriginal2,0,0);
 });
 
 //------------------------FILTRO BLANCO Y NEGRO--------------------------------------------------------------
@@ -73,20 +86,29 @@ function filtroBlancoYNegro(){
 
     //let imageData=ctx.getImageData(0,0,myImage.width,myImage.height);
     let imageData=ctx.getImageData(0,0,width,height);
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
+    imageData2=contexto.getImageData(0,0,width,height);  
+  
+   
+          for (let x = 0; x < nuevoAncho; x++) {
+                for (let y = 0; y < nuevoAlto; y++) {
 
-            let color=getColor(imageData,x,y)
-            setPixel(imageData,x,y,color,color,color,255);
-            
-            
-        }
-        
-    }
+                    let color=getColor(imageData,x,y)
+                    let color1=getColor(imageData2,x,y);
+                    setPixel(imageData,x,y,color,color,color,255);
+                    setPixel(imageData2,x,y,color1,color1,color1,255)
+                    
+                    
+                }
+                
+            }
     ctx.putImageData( imageData, 0, 0 ); 
+   contexto.putImageData(imageData2,0,0);
 
 
 }
+
+
+
 function getColor(imageData,x,y){
 
     let index=(x+y*imageData.height)*4;
@@ -116,29 +138,36 @@ function setPixel(imageData,x,y,r,g,b,a){
 let btnNegativo=document.getElementById('btnNegativo');
 btnNegativo.addEventListener('click', filtroNegativo);
 function filtroNegativo() {
-   // let imageData=ctx.getImageData(0,0,myImage.width,myImage.height);
-   // let width=imageData.width;
-   // let height=imageData.height;
+  
     let imageData=ctx.getImageData(0,0,width,height);
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
-            let pixel = getPixelRGB(imageData, x, y);
+    let imageData2=contexto.getImageData(0,0,width,height);    
+    
+    for (let x = 0; x < nuevoAncho; x++) {
+        for (let y = 0; y < nuevoAlto; y++) {
+            let pixel = getPixelRGB(imageData, x, y);           
             let red = 255 - pixel[0];
             let green = 255 - pixel[1];
             let blue = 255 - pixel[2];           
             setPixel(imageData, x, y, red, green, blue, 255);
+            let pixel2= getPixelRGB(imageData2,x,y);           
+            let red2 = 255 - pixel2[0];
+            let green2 = 255 - pixel2[1];
+            let blue2 = 255 - pixel2[2];   
+            setPixel(imageData2,x,y,red2,green2,blue2,255);
+            
         }
     }
    ctx.putImageData(imageData,0,0);
+   contexto.putImageData(imageData2,0,0);
 }
 
-function getPixelRGB(imageData, x, y){
+function getPixelRGB(image,x, y){
 
-    let index=(x+y*imageData.height)*4;
-    let red=imageData.data[index+0];
-    let green=imageData.data[index+1];
-    let blue=imageData.data[index+2];
-    let a=imageData.data[index+3];
+    let index=(x+y*image.height)*4;
+    let red=image.data[index+0];
+    let green=image.data[index+1];
+    let blue=image.data[index+2];
+    let a=image.data[index+3];
 
     return [red,green,blue,a];
 
@@ -148,18 +177,25 @@ function getPixelRGB(imageData, x, y){
 let btnSepia=document.getElementById('btnSepia');
 btnSepia.addEventListener('click', filtroSepia);
 function filtroSepia() {
-   // let imageData=ctx.getImageData(0,0,myImage.width,myImage.height);
-    let imageData=ctx.getImageData(0,0,width,height);
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
+  
+   let imageData=ctx.getImageData(0,0,width,height);
+   let imageData2=contexto.getImageData(0,0,width,height);
+    for (let x = 0; x < nuevoAncho; x++) {
+        for (let y = 0; y < nuevoAlto; y++) {
             let pixel = getPixelRGB(imageData, x, y);
+            let pixel2=getPixelRGB(imageData2,x,y);
             let red = (0.393*pixel[0])+(0.769*pixel[1])+(0.189*pixel[2]);
             let green = (0.349*pixel[0])+(0.686*pixel[1])+(0.168*pixel[2]);
             let blue =  (0.272*pixel[0])+(0.534*pixel[1])+(0.131*pixel[2]);     
             setPixel(imageData, x, y, red, green, blue, 255);
+            let red2 = (0.393*pixel2[0])+(0.769*pixel2[1])+(0.189*pixel2[2]);
+            let green2 = (0.349*pixel2[0])+(0.686*pixel2[1])+(0.168*pixel2[2]);
+            let blue2 =  (0.272*pixel2[0])+(0.534*pixel2[1])+(0.131*pixel2[2]);  
+            setPixel(imageData2, x, y, red2, green2, blue2, 255);
         }
     }
    ctx.putImageData(imageData,0,0);
+   contexto.putImageData(imageData2,0,0);
 }
 
 function getPixelRGB(imageData, x, y){
@@ -187,17 +223,25 @@ btnBrilloMas.addEventListener('click', function() {
      let intensidad=valor;
    
       let imageData=ctx.getImageData(0,0,width,height);
+      let imageData2=contexto.getImageData(0,0,width,height);
+      
         for (let x = 0; x < width; x++) {
             for (let y = 0; y < height; y++) {
                 let pixel = getPixelRGB(imageData, x, y);
+                let pixel2 = getPixelRGB(imageData2, x, y);
                 let red = rangoColor(pixel[0] + intensidad);
                 let green = rangoColor(pixel[1] + intensidad);
                 let blue = rangoColor(pixel[2] + intensidad);                
                 setPixel(imageData, x, y, red, green, blue, 255);
+                let red2 = rangoColor(pixel2[0] + intensidad);
+                let green2 = rangoColor(pixel2[1] + intensidad);
+                let blue2 = rangoColor(pixel2[2] + intensidad);  
+                setPixel(imageData2,x,y,red2,green2,blue2,255);
             }
        }      
       
        ctx.putImageData( imageData, 0, 0 );    
+       contexto.putImageData(imageData2,0,0);
      } 
 
     function rangoColor(valor){
@@ -222,19 +266,23 @@ let btnBinarizacion=document.getElementById('btnBinarizacion');
 btnBinarizacion.addEventListener('click',filtroBinarizacion)
 
 function filtroBinarizacion() {
-    //let imageData = ctx.getImageData(0, 0, myImage.width,myImage.height);
+    let imageData2=contexto.getImageData(0,0,width,height);
     let imageData=ctx.getImageData(0,0,width,height);
 
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
             let pixel = getPixelRGB(imageData, x, y);
+            let pixel2=getPixelRGB(imageData2, x, y);
             let promedioPixel = rangoColor(Math.floor((pixel[0] + pixel[1] + pixel[2]) / 3));            
-            let pixelBlancoNegro = comprobarBlancoNegro(promedioPixel);          
-            
+            let pixelBlancoNegro = comprobarBlancoNegro(promedioPixel); 
+            let promedioPixel2 = rangoColor(Math.floor((pixel2[0] + pixel2[1] + pixel2[2]) / 3));         
+            let pixelBlancoNegro2 = comprobarBlancoNegro(promedioPixel2); 
             setPixel(imageData, x, y, pixelBlancoNegro, pixelBlancoNegro, pixelBlancoNegro, 255);
+            setPixel(imageData2,x,y,pixelBlancoNegro2,pixelBlancoNegro2,pixelBlancoNegro2,255);
         }
     }
     ctx.putImageData(imageData, 0, 0 );
+    contexto.putImageData(imageData2,0,0);
     
 }
 
@@ -261,16 +309,22 @@ btnSaturacion.addEventListener('click', function() {
 function filtroSaturacion(saturacion) {
 
    let imageData=ctx.getImageData(0,0,width,height);
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y <  height; y++) {
+   let imageData2=contexto.getImageData(0,0,width,height);
+    for (let x = 0; x < nuevoAncho; x++) {
+        for (let y = 0; y <  nuevoAlto; y++) {
             let pixel = getPixelRGB(imageData, x, y);
             let hsv = rgbToHsv(pixel[0], pixel[1], pixel[2]);
             let rgb = HSVtoRGB(hsv[0], (hsv[1] + saturacion), hsv[2]);
            
             setPixel(imageData, x, y, rgb[0], rgb[1], rgb[2], 255);
+            let pixel2 = getPixelRGB(imageData2, x, y);
+            let hsv2 = rgbToHsv(pixel2[0], pixel2[1], pixel2[2]);
+            let rgb2 = HSVtoRGB(hsv2[0], (hsv2[1] + saturacion), hsv2[2]);
+            setPixel(imageData2,x,y,rgb2[0],rgb2[1],rgb2[2],255);
         }
     }
    ctx.putImageData(imageData,0,0);
+   contexto.putImageData(imageData2,0,0);
 }
 
 function rgbToHsv(r, g, b) {
@@ -364,10 +418,12 @@ let btnBlur=document.getElementById('btnBlur');
 btnBlur.addEventListener('click',filtroBlur);
 
 function filtroBlur(){
-
+    let imageData2=contexto.getImageData(0,0,width,height);
+    let imageData2Editada=aplicarBlur(imageData2);
     let imagenOriginal = ctx.getImageData(0, 0, width, height); 
     let imageDataEditada = aplicarBlur(imagenOriginal);
     ctx.putImageData(imageDataEditada, 0, 0);
+    contexto.putImageData(imageData2Editada,0,0);
 }
 
 function aplicarBlur(imagen){
@@ -427,9 +483,6 @@ function grabarImagen(){
 
 
 function limpiarCanvas(){
-
-
-   
     
     let imageData = ctx.createImageData(width,height);    
     for (let x=0;x<width;x++){
@@ -441,11 +494,14 @@ function limpiarCanvas(){
 
 }
 function grabar () {
-    var link = window.document.createElement( 'a' ),
-       url = canvas.toDataURL(),
-       
-      filename = 'imagen.jpg';
+   
+   
+  //  console.log(imageData.src,imageData.height);
 
+    let link = window.document.createElement( 'a' ),
+    url = canvasOriginal.toDataURL(),   
+    
+      filename = 'imagen.jpg';
     link.setAttribute( 'href', url );
     link.setAttribute( 'download', filename );
     link.style.visibility = 'hidden';

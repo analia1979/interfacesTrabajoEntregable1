@@ -12,3 +12,8 @@ canvas {
     margin-top: 10px;
 }
 
+ .myCanvasOriginal{
+    display: none;
+    
+} 
+
