@@ -8,8 +8,8 @@ let ctx=canvas.getContext('2d');
 
 let width=canvas.width;
 let height=canvas.height;
-let nuevoAlto=canvas.height;
-let nuevoAncho=canvas.width;
+let x1=0;
+let y1=0;
 let myImage = new Image();
 let imagen=document.getElementById('file');
 let imagenOriginal;
@@ -32,39 +32,31 @@ imagen.addEventListener('change',function(e){
         myImage.src=e.target.result;
         myImage.onload=()=>{    
 
-            let aspectRatio=myImage.width/myImage.height;
-            if (aspectRatio<1){
-                nuevoAncho=Math.floor(height*aspectRatio);          
-                 myDrawImage(myImage,nuevoAncho,height);
-               
-            }
-            else{
-                if (aspectRatio>1){
-
-                        nuevoAlto=Math.floor(width/aspectRatio);
-                        
-                        myDrawImage(myImage,width,nuevoAlto);
-            }else{
-                myDrawImage(myImage,width,height);
-            }
-            } 
-          //  console.log(myImage.width,myImage.height);
-            //console.log(width,height);
+          //  https://riptutorial.com/html5-canvas/example/19169/scaling-image-to-fit-or-fill-
+          // sacado de esta pagina como escalar la imagen .  
+            
+          let scale = Math.max(canvas.width / myImage.width, canvas.height / myImage.height);
+           
+            x1 = (canvas.width / 2) - (myImage.width / 2) * scale;
+            y1= (canvas.height / 2) - (myImage.height / 2) * scale;
+            myDrawImage(myImage,x1,y1, myImage.width * scale, myImage.height * scale);
+        }
+      
             
         }
     }   
 
-    }          
+              
 
     });
 
-function myDrawImage(image,width,height){
+function myDrawImage(image,x,y,width,height){
 
-        ctx.drawImage(image,0,0,width,height);   
+        ctx.drawImage(image,x,y,width,height);   
         canvasOriginal.width=image.width;
         canvasOriginal.height=image.height;
         contexto.drawImage(image,0,0,canvasOriginal.width,canvasOriginal.height);     
-        imagenOriginal=ctx.getImageData(0,0,width,height);
+        imagenOriginal=ctx.getImageData(x,y,width,height);
         imagenOriginal2=contexto.getImageData(0,0,canvasOriginal.width,canvasOriginal.height);
         console.log(canvasOriginal.width,canvasOriginal.height,width,height);
 
@@ -73,8 +65,8 @@ function myDrawImage(image,width,height){
  }
 //////////////////////////---------------------RESTAURAR------------------------////////////////////
  document.getElementById("btnRestaurar").addEventListener("click", e => {
-   ctx.putImageData(imagenOriginal, 0, 0);
-   contexto.putImageData(imagenOriginal2,0,0);
+   ctx.putImageData(imagenOriginal, x1, y1);
+  // contexto.putImageData(imagenOriginal2,0,0);
 });
 
 //------------------------FILTRO BLANCO Y NEGRO--------------------------------------------------------------
@@ -89,8 +81,8 @@ function filtroBlancoYNegro(){
     imageData2=contexto.getImageData(0,0,width,height);  
   
    
-          for (let x = 0; x < nuevoAncho; x++) {
-                for (let y = 0; y < nuevoAlto; y++) {
+          for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
 
                     let color=getColor(imageData,x,y)
                     let color1=getColor(imageData2,x,y);
@@ -142,8 +134,8 @@ function filtroNegativo() {
     let imageData=ctx.getImageData(0,0,width,height);
     let imageData2=contexto.getImageData(0,0,width,height);    
     
-    for (let x = 0; x < nuevoAncho; x++) {
-        for (let y = 0; y < nuevoAlto; y++) {
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
             let pixel = getPixelRGB(imageData, x, y);           
             let red = 255 - pixel[0];
             let green = 255 - pixel[1];
@@ -180,8 +172,8 @@ function filtroSepia() {
   
    let imageData=ctx.getImageData(0,0,width,height);
    let imageData2=contexto.getImageData(0,0,width,height);
-    for (let x = 0; x < nuevoAncho; x++) {
-        for (let y = 0; y < nuevoAlto; y++) {
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
             let pixel = getPixelRGB(imageData, x, y);
             let pixel2=getPixelRGB(imageData2,x,y);
             let red = (0.393*pixel[0])+(0.769*pixel[1])+(0.189*pixel[2]);
@@ -310,8 +302,8 @@ function filtroSaturacion(saturacion) {
 
    let imageData=ctx.getImageData(0,0,width,height);
    let imageData2=contexto.getImageData(0,0,width,height);
-    for (let x = 0; x < nuevoAncho; x++) {
-        for (let y = 0; y <  nuevoAlto; y++) {
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y <  height; y++) {
             let pixel = getPixelRGB(imageData, x, y);
             let hsv = rgbToHsv(pixel[0], pixel[1], pixel[2]);
             let rgb = HSVtoRGB(hsv[0], (hsv[1] + saturacion), hsv[2]);
@@ -499,7 +491,7 @@ function grabar () {
   //  console.log(imageData.src,imageData.height);
 
     let link = window.document.createElement( 'a' ),
-    url = canvasOriginal.toDataURL(),   
+    url = canvas.toDataURL(),   
     
       filename = 'imagen.jpg';
     link.setAttribute( 'href', url );
