@@ -3,8 +3,9 @@ document.addEventListener('DOMContentLoaded' , () => {
 let canvas=document.getElementById('myCanvasImage');
 
 let ctx=canvas.getContext('2d');
+let imagenTamanoOriginal=new Image();
 let width=canvas.width;
-let height=canvas.height
+let height=canvas.height;
 let myImage = new Image();
 let imagen=document.getElementById('file');
 let imagenOriginal;
@@ -12,18 +13,37 @@ let imagenOriginal;
 
 imagen.addEventListener('change',function(e){
 
-   if(e.target.files){
+    limpiarCanvas();
+    if(e.target.files){
 
     let reader=new FileReader(); // creamos un objeto para almacenar la imagen
     reader.readAsDataURL(e.target.files[0]);
     reader.onloadend = function (e){
 
         myImage.src=e.target.result;
-        myImage.onload=()=>{
+        myImage.onload=()=>{    
+            
+            //si aspect es mayor que 1, entonces la imagen está orientada horizontalmente, 
+            // si es menor que 1  la imagen está orientada verticalmente
+             // (y es cuadrada si aspect = 1)
+           
+            let aspectRatio=myImage.width/myImage.height;
+            if (aspectRatio<1){
+                let nuevoAncho=Math.floor(height*aspectRatio);          
+                 myDrawImage(myImage,nuevoAncho,height);
+               
+            }
+            else{
+                if (aspectRatio>1){
 
-          //  canvas.width=myImage.width;
-           // canvas.height=myImage.height;
-            myDrawImage(myImage);
+                        let nuevoAlto=Math.floor(width/aspectRatio);
+                        
+                        myDrawImage(myImage,width,nuevoAlto);
+            }else{
+                myDrawImage(myImage,width,height);
+            }
+            }
+            
         }
     }   
 
@@ -31,10 +51,12 @@ imagen.addEventListener('change',function(e){
 
     });
 
-function myDrawImage(image){
+function myDrawImage(image,width,height){
 
         ctx.drawImage(image,0,0,width,height);
+       
         imagenOriginal=ctx.getImageData(0,0,width,height);
+
 
  }
 //////////////////////////---------------------RESTAURAR------------------------////////////////////
@@ -55,7 +77,8 @@ function filtroBlancoYNegro(){
         for (let y = 0; y < height; y++) {
 
             let color=getColor(imageData,x,y)
-            setPixel(imageData,x,y,color,color,color,255);           
+            setPixel(imageData,x,y,color,color,color,255);
+            
             
         }
         
@@ -94,6 +117,8 @@ let btnNegativo=document.getElementById('btnNegativo');
 btnNegativo.addEventListener('click', filtroNegativo);
 function filtroNegativo() {
    // let imageData=ctx.getImageData(0,0,myImage.width,myImage.height);
+   // let width=imageData.width;
+   // let height=imageData.height;
     let imageData=ctx.getImageData(0,0,width,height);
     for (let x = 0; x < width; x++) {
         for (let y = 0; y < height; y++) {
@@ -394,7 +419,18 @@ btnGuardar.addEventListener('click',grabarImagen)
 
 function grabarImagen(){
 
-    grabar();
+    grabar();     
+    imagen.value='';
+    limpiarCanvas();   
+
+};
+
+
+function limpiarCanvas(){
+
+
+   
+    
     let imageData = ctx.createImageData(width,height);    
     for (let x=0;x<width;x++){
         for(let y=0;y<height;y++){
@@ -403,11 +439,12 @@ function grabarImagen(){
     }
     ctx.putImageData(imageData,0,0);
 
-};
+}
 function grabar () {
     var link = window.document.createElement( 'a' ),
-        url = canvas.toDataURL(),
-        filename = 'imagen.jpg';
+       url = canvas.toDataURL(),
+       
+      filename = 'imagen.jpg';
 
     link.setAttribute( 'href', url );
     link.setAttribute( 'download', filename );
